@@ -52,6 +52,12 @@
   letter-spacing: 0.04em;
 }
 
+@media (max-width: 640px) {
+  .nav-links {
+    display: none;
+  }
+}
+
 .nav-links a {
   color: rgba(255, 255, 255, 0.75);
   transition: color 180ms ease;
@@ -95,6 +101,14 @@ main {
   gap: clamp(2rem, 6vw, 4rem);
   align-items: center;
   padding: clamp(3rem, 6vw, 4.5rem) clamp(1.75rem, 6vw, 4rem) clamp(5rem, 7vw, 6rem);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2.5rem 1.25rem 3rem;
+  }
 }
 
 .hero-copy {
@@ -179,6 +193,13 @@ main {
   justify-content: center;
 }
 
+@media (max-width: 900px) {
+  .hero-visual {
+    min-height: 280px;
+    border-radius: 1.25rem;
+  }
+}
+
 .orbital-ring {
   position: absolute;
   width: 240px;
@@ -187,6 +208,13 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.18);
   opacity: 0.8;
   animation: spin 18s linear infinite;
+}
+
+@media (max-width: 900px) {
+  .orbital-ring {
+    width: 160px;
+    height: 160px;
+  }
 }
 
 .floating-card {
@@ -217,6 +245,32 @@ main {
   right: 12%;
   width: 200px;
   animation-delay: 1.5s;
+}
+
+@media (max-width: 900px) {
+  .floating-card {
+    top: 8%;
+    left: 5%;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    max-width: 45%;
+  }
+
+  .floating-card strong {
+    font-size: 0.95rem;
+  }
+
+  .floating-card.timeline {
+    bottom: 8%;
+    right: 5%;
+    width: auto;
+    max-width: 45%;
+  }
+
+  .floating-card.timeline ul {
+    font-size: 0.75rem;
+    gap: 0.2rem;
+  }
 }
 
 .floating-card.timeline ul {
