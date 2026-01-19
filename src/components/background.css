@@ -1,0 +1,95 @@
+.forms-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.forms-background__layer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    animation: formsBackgroundFade 2s ease-in-out forwards;
+    animation-delay: 0.2s;
+}
+
+@keyframes formsBackgroundFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.forms-background__blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(110px);
+    mix-blend-mode: screen;
+    will-change: transform;
+}
+
+.forms-background__blob--blue {
+    top: -10%;
+    left: -20%;
+    width: min(70vw, 900px);
+    height: min(70vw, 900px);
+    min-width: 600px;
+    min-height: 600px;
+    background: radial-gradient(ellipse at top left, rgba(59, 130, 246, 0.2), transparent 80%);
+    animation: formsBlobBlue 18s ease-in-out infinite;
+}
+
+.forms-background__blob--pink {
+    bottom: -20%;
+    right: -10%;
+    width: min(80vw, 1100px);
+    height: min(80vw, 1100px);
+    min-width: 700px;
+    min-height: 700px;
+    filter: blur(130px);
+    background: radial-gradient(ellipse at bottom right, rgba(236, 72, 153, 0.2), transparent 80%);
+    animation: formsBlobPink 22s ease-in-out infinite;
+}
+
+@keyframes formsBlobBlue {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate3d(50px, -50px, 0) scale(1.1);
+    }
+
+    66% {
+        transform: translate3d(-30px, 30px, 0) scale(0.95);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes formsBlobPink {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate3d(-60px, 60px, 0) scale(0.9);
+    }
+
+    66% {
+        transform: translate3d(40px, -40px, 0) scale(1.1);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}

@@ -1,5 +1,7 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import './App.css'
+import Background from './components/Background'
+import ActiveForms from './components/ActiveForms'
 
 const teams = [
   {
@@ -95,6 +97,8 @@ const teams = [
 function App() {
   const [activeTeam, setActiveTeam] = useState(null)
   const teamsSectionRef = useRef(null)
+  const [activeTeamIndex, setActiveTeamIndex] = useState(0)
+  const carouselPointerRef = useRef({ startX: null })
 
   const handleScrollToTeams = () => {
     teamsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -102,197 +106,321 @@ function App() {
 
   const closeModal = () => setActiveTeam(null)
 
+  const clampIndex = useMemo(() => {
+    return (value) => {
+      const len = teams.length
+      if (len === 0) return 0
+      return ((value % len) + len) % len
+    }
+  }, [])
+
+  const prevIndex = useMemo(() => clampIndex(activeTeamIndex - 1), [activeTeamIndex, clampIndex])
+  const nextIndex = useMemo(() => clampIndex(activeTeamIndex + 1), [activeTeamIndex, clampIndex])
+
+  const goPrev = () => setActiveTeamIndex((idx) => clampIndex(idx - 1))
+  const goNext = () => setActiveTeamIndex((idx) => clampIndex(idx + 1))
+
+  const onCarouselKeyDown = (event) => {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      goPrev()
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      goNext()
+    }
+  }
+
+  const onCarouselPointerDown = (event) => {
+    carouselPointerRef.current.startX = event.clientX
+  }
+
+  const onCarouselPointerUp = (event) => {
+    const startX = carouselPointerRef.current.startX
+    carouselPointerRef.current.startX = null
+    if (startX == null) return
+
+    const deltaX = event.clientX - startX
+    const threshold = 40
+
+    if (deltaX <= -threshold) {
+      goNext()
+    } else if (deltaX >= threshold) {
+      goPrev()
+    }
+  }
+
   return (
-    <div className="page">
-      <header className="site-header">
-        <div className="brand" aria-label="YTU SkyLab">
-          <img className="brand-mark" src="/public/assets/favicon.ico" alt="SKY LAB" />
-          <span className="brand-sub">Ar-Ge</span>
-        </div>
-        <nav className="nav-links" aria-label="Ana menü">
-          <a href="#hero">Ana Sayfa</a>
-          <a href="#teams">Ekipler</a>
-          <a href="#apply">Başvur</a>
-        </nav>
-      </header>
-
-      <main>
-        <section id="hero" className="hero">
-          <div className="hero-copy">
-            <p className="eyebrow">YTU SkyLab Ar-Ge</p>
-            <h1>Geleceğin projelerini birlikte tasarlayalım.</h1>
-            <p className="lead">
-              Çok disiplinli ekiplerimizle yapay zekadan web geliştirmeye, algoritmadan siber güvenliğe uzanan projelerde
-              yer al.
-            </p>
-            <div className="hero-actions">
-              <button className="secondary-button" type="button" onClick={handleScrollToTeams}>
-                Ekipleri Gör
-              </button>
-            </div>
+    <>
+      <Background />
+      <div className="page page--overlay">
+        <header className="site-header">
+          <div className="brand" aria-label="YTU SkyLab">
+            <img className="brand-mark" src="/public/assets/favicon.ico" alt="SKY LAB" />
+            <span className="brand-sub">Ar-Ge</span>
           </div>
-          <div className="hero-visual" role="presentation">
-            <div className="orbital-ring" />
-            <div className="floating-card">
-              <span>8 Ar-Ge Ekibi</span>
-              <strong>Takımını Seç</strong>
-            </div>
-            <div className="floating-card timeline">
-              <span>Ekiplerimiz</span>
-              <ul>
-                <li>AirLab</li>
-                <li>AlgoLab</li>
-                <li>ChainLab</li>
-                <li>GameLab</li>
-                <li>MobiLab</li>
-                <li>SkySec</li>
-                <li>SkySis</li>
-                <li>WebLab</li>
-              </ul>
-            </div>
-          </div>
-          <button className="scroll-hint" type="button" onClick={handleScrollToTeams} aria-label="Ekipleri keşfet">
-            <span>Kaydır</span>
-            <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M10 0v18.2M18 10l-8 8-8-8"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </section>
+          <nav className="nav-links" aria-label="Ana menü">
+            <a href="#hero">Ana Sayfa</a>
+            <a href="#teams">Ekipler</a>
+            <a href="#apply">Başvur</a>
+          </nav>
+        </header>
 
-        <section id="teams" className="teams" ref={teamsSectionRef}>
-          <header className="section-header">
-            <p className="eyebrow">Ekipler</p>
-            <h2>SkyLab Ar-Ge ekipleri ile tanış</h2>
-            <p>
-              Kartlara tıklayarak her ekibin proje yaklaşımını, açıklamasını ve katılımcıların kullandığı temel yetenekleri inceleyebilirsin.
-            </p>
-          </header>
-          <div className="team-grid">
-            {teams.map((team) => (
-              <article
-                key={team.id}
-                className="team-card"
-                style={{ '--team-accent': team.accent }}
-                onClick={() => setActiveTeam(team)}
-                tabIndex={0}
-                role="button"
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    setActiveTeam(team)
-                  }
-                }}
-              >
-                <div className="team-card__content">
-                  <div className="team-card__logo" aria-hidden={!team.logo}>
-                    {team.logo ? (
-                      <img
-                        src={team.logo.replace?.(/^\/public/, '') ?? team.logo}
-                        alt={`${team.name} logo`}
-                      />
-                    ) : (
-                      <span aria-hidden="true">{team.name.slice(0, 2)}</span>
-                    )}
-                  </div>
-                  <h3 className="team-card__title">{team.name}</h3>
-                  {team.tagline ? <p className="team-card__tagline">{team.tagline}</p> : null}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        <main>
+          <section id="hero" className="hero">
+            <div className="hero-copy">
+              <p className="eyebrow">YTU SkyLab Ar-Ge</p>
+              <h1>Geleceğin projelerini birlikte tasarlayalım.</h1>
+              <p className="lead">
+                Çok disiplinli ekiplerimizle yapay zekadan web geliştirmeye, algoritmadan siber güvenliğe uzanan projelerde
+                yer al.
+              </p>
+              <div className="hero-actions">
+                <button className="secondary-button" type="button" onClick={handleScrollToTeams}>
+                  Ekipleri Gör
+                </button>
+              </div>
+            </div>
+            <div className="hero-visual" role="presentation">
+              <div className="orbital-ring" />
+              <div className="floating-card">
+                <span>8 Ar-Ge Ekibi</span>
+                <strong>Takımını Seç</strong>
+              </div>
+              <div className="floating-card timeline">
+                <span>Ekiplerimiz</span>
+                <ul>
+                  <li>AirLab</li>
+                  <li>AlgoLab</li>
+                  <li>ChainLab</li>
+                  <li>GameLab</li>
+                  <li>MobiLab</li>
+                  <li>SkySec</li>
+                  <li>SkySis</li>
+                  <li>WebLab</li>
+                </ul>
+              </div>
+            </div>
+            <button className="scroll-hint" type="button" onClick={handleScrollToTeams} aria-label="Ekipleri keşfet">
+              <span>Kaydır</span>
+              <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M10 0v18.2M18 10l-8 8-8-8"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </section>
 
-        <section id="apply" className="apply">
-          <div className="apply-content">
-            <h2>Kulüp hakkında soruların mı var?</h2>
-            <p>
-              SkyLab sitesine göz at ve kulüp hakkında daha fazla bilgi edin.
-            </p>
-            <a
-              className="primary-button"
-              target='_blank'
-              href="https://yildizskylab.com/"
+          <section id="teams" className="teams" ref={teamsSectionRef}>
+            <header className="section-header">
+              <p className="eyebrow">Ekipler</p>
+              <h2>SkyLab Ar-Ge ekipleri ile tanış</h2>
+              <p>
+                Kartlara tıklayarak her ekibin proje yaklaşımını, açıklamasını ve katılımcıların kullandığı temel yetenekleri inceleyebilirsin.
+              </p>
+            </header>
+            <div
+              className="team-carousel"
+              role="group"
+              aria-label="Ekip carousel"
+              tabIndex={0}
+              onKeyDown={onCarouselKeyDown}
+              onPointerDown={onCarouselPointerDown}
+              onPointerUp={onCarouselPointerUp}
             >
-              SKY LAB Sitesi
-            </a>
-          </div>
-        </section>
-      </main>
+              <button className="team-carousel__button" type="button" onClick={goPrev} aria-label="Önceki ekip">
+                ‹
+              </button>
 
-      <footer className="site-footer">
-        <div className="footer-brand">
-          <img className="footer-mark" src="/public/assets/favicon.ico" alt="SKY LAB" />
-          <span className="brand-sub">SKY LAB Bilgisayar Bilimleri Kulübü</span>
-        </div>
-        <div className="footer-meta">
-          <p>
-            Davutpaşa Kampüsü, İstanbul •{' '}
-            YTU SKY LAB
-          </p>
-          <p>Tüm hakları saklıdır © {new Date().getFullYear()}.</p>
-        </div>
-      </footer>
+              <div className="team-carousel__viewport">
+                {teams[prevIndex] ? (
+                  <article
+                    key={teams[prevIndex].id}
+                    className="team-card team-card--carousel team-card--carousel-side"
+                    style={{ '--team-accent': teams[prevIndex].accent }}
+                    onClick={() => setActiveTeamIndex(prevIndex)}
+                    tabIndex={-1}
+                    aria-label={`Önizleme: ${teams[prevIndex].name}`}
+                  >
+                    <div className="team-card__content">
+                      <div className="team-card__logo" aria-hidden={!teams[prevIndex].logo}>
+                        {teams[prevIndex].logo ? (
+                          <img
+                            src={teams[prevIndex].logo.replace?.(/^\/public/, '') ?? teams[prevIndex].logo}
+                            alt={`${teams[prevIndex].name} logo`}
+                          />
+                        ) : (
+                          <span aria-hidden="true">{teams[prevIndex].name.slice(0, 2)}</span>
+                        )}
+                      </div>
+                      <h3 className="team-card__title">{teams[prevIndex].name}</h3>
+                      {teams[prevIndex].tagline ? (
+                        <p className="team-card__tagline">{teams[prevIndex].tagline}</p>
+                      ) : null}
+                    </div>
+                  </article>
+                ) : null}
 
-      {activeTeam && (
-        <div className="team-modal" role="dialog" aria-modal="true" aria-labelledby={`${activeTeam.id}-title`} onClick={closeModal}>
-          <div
-            className="team-modal__content"
-            role="document"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="team-modal__close-wrapper">
-              <button className="modal-close" type="button" onClick={closeModal} aria-label="Bilgi penceresini kapat">
-                ×
+                {teams[activeTeamIndex] ? (
+                  <article
+                    key={teams[activeTeamIndex].id}
+                    className="team-card team-card--carousel team-card--carousel-main"
+                    style={{ '--team-accent': teams[activeTeamIndex].accent }}
+                    onClick={() => setActiveTeam(teams[activeTeamIndex])}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Seçili ekip: ${teams[activeTeamIndex].name}`}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        setActiveTeam(teams[activeTeamIndex])
+                      }
+                    }}
+                  >
+                    <div className="team-card__content">
+                      <div className="team-card__logo" aria-hidden={!teams[activeTeamIndex].logo}>
+                        {teams[activeTeamIndex].logo ? (
+                          <img
+                            src={teams[activeTeamIndex].logo.replace?.(/^\/public/, '') ?? teams[activeTeamIndex].logo}
+                            alt={`${teams[activeTeamIndex].name} logo`}
+                          />
+                        ) : (
+                          <span aria-hidden="true">{teams[activeTeamIndex].name.slice(0, 2)}</span>
+                        )}
+                      </div>
+                      <h3 className="team-card__title">{teams[activeTeamIndex].name}</h3>
+                      {teams[activeTeamIndex].tagline ? (
+                        <p className="team-card__tagline">{teams[activeTeamIndex].tagline}</p>
+                      ) : null}
+                    </div>
+                  </article>
+                ) : null}
+
+                {teams[nextIndex] ? (
+                  <article
+                    key={teams[nextIndex].id}
+                    className="team-card team-card--carousel team-card--carousel-side"
+                    style={{ '--team-accent': teams[nextIndex].accent }}
+                    onClick={() => setActiveTeamIndex(nextIndex)}
+                    tabIndex={-1}
+                    aria-label={`Önizleme: ${teams[nextIndex].name}`}
+                  >
+                    <div className="team-card__content">
+                      <div className="team-card__logo" aria-hidden={!teams[nextIndex].logo}>
+                        {teams[nextIndex].logo ? (
+                          <img
+                            src={teams[nextIndex].logo.replace?.(/^\/public/, '') ?? teams[nextIndex].logo}
+                            alt={`${teams[nextIndex].name} logo`}
+                          />
+                        ) : (
+                          <span aria-hidden="true">{teams[nextIndex].name.slice(0, 2)}</span>
+                        )}
+                      </div>
+                      <h3 className="team-card__title">{teams[nextIndex].name}</h3>
+                      {teams[nextIndex].tagline ? <p className="team-card__tagline">{teams[nextIndex].tagline}</p> : null}
+                    </div>
+                  </article>
+                ) : null}
+              </div>
+
+              <button className="team-carousel__button" type="button" onClick={goNext} aria-label="Sonraki ekip">
+                ›
               </button>
             </div>
-            <div className="team-modal__left">
-              <div
-                className="team-modal__media"
-                style={{ background: !activeTeam.logo && activeTeam.visual ? activeTeam.visual : undefined }}
+          </section>
+
+          <ActiveForms />
+
+          <section id="apply" className="apply">
+            <div className="apply-content">
+              <h2>Kulüp hakkında soruların mı var?</h2>
+              <p>
+                SkyLab sitesine göz at ve kulüp hakkında daha fazla bilgi edin.
+              </p>
+              <a
+                className="primary-button"
+                target='_blank'
+                href="https://yildizskylab.com/"
               >
-                {activeTeam.logo ? (
-                  <img
-                    src={activeTeam.logo.replace?.(/^\/public/, '') ?? activeTeam.logo}
-                    alt={activeTeam.name}
-                  />
-                ) : (
-                  <div className="team-modal__media-overlay">
-                    <span>{activeTeam.name}</span>
-                  </div>
-                )}
-              </div>
-              <div className="team-modal__meta">
-                {activeTeam.skills?.length ? (
-                  <div className="chip-group">
-                    {activeTeam.skills.map((skill) => (
-                      <span key={skill} className="chip">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-                <a
-                  className="primary-button"
-                  href="mailto:skylab@ytu.edu.tr?subject=SkyLab%20Ekibi%20Başvuru"
-                >
-                  Bu Ekibe Başvur
-                </a>
-              </div>
+                SKY LAB Sitesi
+              </a>
             </div>
-            <div className="team-modal__info">
-              <h3 id={`${activeTeam.id}-title`}>{activeTeam.name}</h3>
-              <p>{activeTeam.description}</p>
+          </section>
+        </main>
+
+        <footer className="site-footer">
+          <div className="footer-brand">
+            <img className="footer-mark" src="/public/assets/favicon.ico" alt="SKY LAB" />
+            <span className="brand-sub">SKY LAB Bilgisayar Bilimleri Kulübü</span>
+          </div>
+          <div className="footer-meta">
+            <p>
+              Davutpaşa Kampüsü, İstanbul •{' '}
+              YTU SKY LAB
+            </p>
+            <p>Tüm hakları saklıdır © {new Date().getFullYear()}.</p>
+          </div>
+        </footer>
+
+        {activeTeam && (
+          <div className="team-modal" role="dialog" aria-modal="true" aria-labelledby={`${activeTeam.id}-title`} onClick={closeModal}>
+            <div
+              className="team-modal__content"
+              role="document"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="team-modal__close-wrapper">
+                <button className="modal-close" type="button" onClick={closeModal} aria-label="Bilgi penceresini kapat">
+                  ×
+                </button>
+              </div>
+              <div className="team-modal__left">
+                <div
+                  className="team-modal__media"
+                  style={{ background: !activeTeam.logo && activeTeam.visual ? activeTeam.visual : undefined }}
+                >
+                  {activeTeam.logo ? (
+                    <img
+                      src={activeTeam.logo.replace?.(/^\/public/, '') ?? activeTeam.logo}
+                      alt={activeTeam.name}
+                    />
+                  ) : (
+                    <div className="team-modal__media-overlay">
+                      <span>{activeTeam.name}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="team-modal__meta">
+                  {activeTeam.skills?.length ? (
+                    <div className="chip-group">
+                      {activeTeam.skills.map((skill) => (
+                        <span key={skill} className="chip">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <a
+                    className="primary-button"
+                    href="mailto:skylab@ytu.edu.tr?subject=SkyLab%20Ekibi%20Başvuru"
+                  >
+                    Bu Ekibe Başvur
+                  </a>
+                </div>
+              </div>
+              <div className="team-modal__info">
+                <h3 id={`${activeTeam.id}-title`}>{activeTeam.name}</h3>
+                <p>{activeTeam.description}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }
 
