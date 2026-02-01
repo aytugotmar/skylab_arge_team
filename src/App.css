@@ -2,8 +2,13 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(circle at top, rgba(74, 95, 255, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 20%, rgba(255, 134, 214, 0.15), transparent 55%),
+  background:
+    radial-gradient(circle at top, rgba(74, 95, 255, 0.2), transparent 45%),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 134, 214, 0.15),
+      transparent 55%
+    ),
     var(--surface-primary);
   color: var(--text-primary);
 }
@@ -74,7 +79,9 @@
 }
 
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 }
 
 .ghost-button {
@@ -87,7 +94,9 @@
   background: transparent;
   color: #ffffff;
   font-weight: 600;
-  transition: border-color 180ms ease, transform 200ms ease;
+  transition:
+    border-color 180ms ease,
+    transform 200ms ease;
 }
 
 .ghost-button:hover,
@@ -100,7 +109,6 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(4rem, 8vw, 6.5rem);
 }
 
 /* Team carousel (3 items: prev + main + next) */
@@ -120,7 +128,9 @@ main {
   background: rgba(255, 255, 255, 0.04);
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  transition: transform 180ms ease, background 180ms ease;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
 }
 
 .team-carousel__button:hover,
@@ -137,7 +147,10 @@ main {
 }
 
 .team-card--carousel {
-  transition: transform 220ms ease, opacity 220ms ease;
+  transition:
+    transform 600ms cubic-bezier(0.34, 0.48, 0.36, 0.95),
+    opacity 600ms cubic-bezier(0.34, 0.48, 0.36, 0.95),
+    box-shadow 600ms cubic-bezier(0.34, 0.48, 0.36, 0.95);
 }
 
 .team-card--carousel-main {
@@ -168,10 +181,12 @@ main {
 
 /* Active forms */
 .active-forms {
-  padding: 0 clamp(1.75rem, 6vw, 4rem);
+  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.75rem, 6vw, 4rem);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 1.5rem;
+  height: 100vh;
 }
 
 .active-forms__state {
@@ -180,21 +195,79 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(7, 9, 26, 0.6);
   color: rgba(255, 255, 255, 0.75);
+  text-align: center;
 }
 
-.active-forms__grid {
+/* Forms carousel */
+.forms-carousel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  outline: none;
+}
+
+.forms-carousel__button {
+  height: 44px;
+  width: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+.forms-carousel__button:hover,
+.forms-carousel__button:focus-visible {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.forms-carousel__viewport {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
   gap: 1rem;
+  align-items: stretch;
+}
+
+.active-form-card--carousel {
+  transition:
+    transform 600ms cubic-bezier(0.34, 0.48, 0.36, 0.95),
+    opacity 600ms cubic-bezier(0.34, 0.48, 0.36, 0.95),
+    box-shadow 600ms cubic-bezier(0.34, 0.48, 0.36, 0.95);
+}
+
+.active-form-card--carousel-main {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.active-form-card--carousel-side {
+  transform: scale(0.92);
+  opacity: 0.78;
+  cursor: pointer;
+}
+
+.active-form-card--carousel-side:hover {
+  opacity: 0.92;
+  transform: scale(0.94);
+}
+
+.active-form-card--carousel-side .active-form-card__details,
+.active-form-card--carousel-side .active-form-card__actions {
+  display: none;
 }
 
 @media (max-width: 900px) {
-  .active-forms {
-    padding: 0 1.25rem;
+  .forms-carousel__viewport {
+    grid-template-columns: 1fr;
   }
 
-  .active-forms__grid {
-    grid-template-columns: 1fr;
+  .active-form-card--carousel-side {
+    display: none;
   }
 }
 
@@ -244,7 +317,10 @@ main {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(2rem, 6vw, 4rem);
   align-items: center;
-  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.75rem, 6vw, 4rem) clamp(5rem, 7vw, 6rem);
+  justify-content: center;
+  height: 100vh;
+  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.75rem, 6vw, 4rem)
+    clamp(5rem, 7vw, 6rem);
 }
 
 @media (max-width: 900px) {
@@ -296,7 +372,10 @@ main {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 200ms ease, background 200ms ease;
+  transition:
+    transform 180ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease;
 }
 
 .primary-button {
@@ -328,8 +407,17 @@ main {
   position: relative;
   min-height: 380px;
   border-radius: 2rem;
-  background: radial-gradient(circle at 30% 30%, rgba(111, 125, 255, 0.25), transparent 65%),
-    radial-gradient(circle at 80% 70%, rgba(255, 120, 199, 0.25), transparent 60%),
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(111, 125, 255, 0.25),
+      transparent 65%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(255, 120, 199, 0.25),
+      transparent 60%
+    ),
     rgba(7, 9, 26, 0.72);
   overflow: hidden;
   display: flex;
@@ -449,12 +537,17 @@ main {
 .teams {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: clamp(2rem, 4vw, 3rem);
-  padding: 0 clamp(1.75rem, 6vw, 4rem);
+  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.75rem, 6vw, 4rem);
+  scroll-margin-top: 0;
+  height: 100vh;
 }
 
 .section-header {
-  max-width: 42rem;
+  max-width: 100%;
+  width: 100%;
+  text-align: center;
 }
 
 .section-header h2 {
@@ -491,7 +584,9 @@ main {
   border-radius: 1.5rem;
   min-height: clamp(200px, 24vw, 240px);
   cursor: pointer;
-  transition: transform 220ms ease, box-shadow 220ms ease;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
   box-shadow: 0 20px 45px rgba(10, 8, 37, 0.18);
   display: flex;
   align-items: stretch;
@@ -502,23 +597,25 @@ main {
 }
 
 .team-card::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: conic-gradient(from 0deg at 50% 50%,
-      rgba(111, 125, 255, 0.85),
-      rgba(155, 107, 255, 0.85),
-      rgba(255, 122, 214, 0.8),
-      rgba(107, 234, 255, 0.78),
-      rgba(111, 125, 255, 0.85));
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(111, 125, 255, 0.85),
+    rgba(155, 107, 255, 0.85),
+    rgba(255, 122, 214, 0.8),
+    rgba(107, 234, 255, 0.78),
+    rgba(111, 125, 255, 0.85)
+  );
   animation: card-spectrum 12s linear infinite;
   will-change: transform;
   z-index: 0;
 }
 
 .team-card::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 2px;
   border-radius: calc(1.5rem - 2px);
@@ -546,12 +643,14 @@ main {
 }
 
 .team-card__content::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: var(--team-accent,
-      linear-gradient(130deg, rgba(111, 125, 255, 0.35), rgba(148, 158, 255, 0.2)));
+  background: var(
+    --team-accent,
+    linear-gradient(130deg, rgba(111, 125, 255, 0.35), rgba(148, 158, 255, 0.2))
+  );
   opacity: 0.25;
   mix-blend-mode: lighten;
   z-index: -1;
@@ -616,7 +715,6 @@ main {
 }
 
 @keyframes card-glow {
-
   0%,
   100% {
     opacity: 0.22;
@@ -630,9 +728,13 @@ main {
 }
 
 .apply {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
   padding: clamp(3rem, 6vw, 4.5rem) clamp(1.75rem, 6vw, 4rem);
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 2rem 2rem 0 0;
+  border-radius: 0;
   box-shadow: 0 -20px 40px rgba(8, 10, 31, 0.4);
 }
 
@@ -759,7 +861,11 @@ main {
 .team-modal__media-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, rgba(7, 9, 26, 0.25), rgba(7, 9, 26, 0.65));
+  background: linear-gradient(
+    160deg,
+    rgba(7, 9, 26, 0.25),
+    rgba(7, 9, 26, 0.65)
+  );
   display: flex;
   align-items: flex-end;
   padding: 1.5rem;
@@ -860,7 +966,6 @@ main {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0);
@@ -872,7 +977,6 @@ main {
 }
 
 @keyframes bounce {
-
   0%,
   100% {
     transform: translate(-50%, 0);
