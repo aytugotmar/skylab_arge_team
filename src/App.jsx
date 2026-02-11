@@ -303,111 +303,153 @@ function App() {
                 yetenekleri inceleyebilirsin.
               </p>
             </header>
-            <div className="team-grid-expandable">
-              {teams.map((team) => {
-                const isExpanded = expandedTeam === team.id;
+            <div
+              className="team-carousel"
+              tabIndex={0}
+              onKeyDown={onCarouselKeyDown}
+              onPointerDown={onCarouselPointerDown}
+              onPointerUp={onCarouselPointerUp}
+            >
+              <button
+                className="team-carousel__nav team-carousel__nav--prev"
+                onClick={goPrev}
+                aria-label="Önceki ekip"
+              >
+                ‹
+              </button>
 
-                return (
-                  <motion.article
-                    key={team.id}
-                    layout
-                    className={`team-card-expandable ${isExpanded ? "team-card-expandable--expanded" : ""}`}
-                    style={{ "--team-accent": team.accent }}
-                    onClick={() => toggleTeam(team.id)}
-                    onMouseEnter={() => handleMouseEnter(team.id)}
-                    onMouseLeave={handleMouseLeave}
-                    initial={false}
-                    animate={{
-                      scale: isExpanded ? 1 : 1,
-                    }}
-                    transition={{
-                      layout: {
-                        duration: 0.3,
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 35,
-                      },
-                    }}
-                  >
-                    <motion.div layout className="team-card-expandable__header">
-                      <div className="team-card__logo">
-                        {team.logo ? (
-                          <img
-                            src={
-                              team.logo.replace?.(/^\/public/, "") ?? team.logo
-                            }
-                            alt={`${team.name} logo`}
-                          />
-                        ) : (
-                          <span>{team.name.slice(0, 2)}</span>
-                        )}
-                      </div>
-                      <div className="team-card-expandable__title-group">
-                        <h3 className="team-card__title">{team.name}</h3>
-                        {team.tagline && (
-                          <p className="team-card__tagline">{team.tagline}</p>
-                        )}
-                      </div>
-                    </motion.div>
+              <div className="team-carousel__viewport">
+                {[prevIndex, activeTeamIndex, nextIndex].map(
+                  (idx, position) => {
+                    const team = teams[idx];
+                    const isMain = position === 1;
+                    const isExpanded = isMain && expandedTeam === team.id;
 
-                    <AnimatePresence mode="wait">
-                      {isExpanded && (
+                    return (
+                      <motion.article
+                        key={`${team.id}-${idx}`}
+                        layout={isMain}
+                        className={`team-card-carousel ${
+                          isMain
+                            ? "team-card-carousel--main"
+                            : "team-card-carousel--side"
+                        } ${isExpanded ? "team-card-carousel--expanded" : ""}`}
+                        style={{ "--team-accent": team.accent }}
+                        onClick={isMain ? () => toggleTeam(team.id) : undefined}
+                        onMouseEnter={
+                          isMain ? () => handleMouseEnter(team.id) : undefined
+                        }
+                        onMouseLeave={isMain ? handleMouseLeave : undefined}
+                        initial={false}
+                        animate={{
+                          scale: isExpanded ? 1 : 1,
+                          opacity: isMain ? 1 : 0.5,
+                        }}
+                        transition={{
+                          layout: {
+                            duration: 0.3,
+                            type: "spring",
+                            stiffness: 350,
+                            damping: 35,
+                          },
+                          opacity: { duration: 0.2 },
+                        }}
+                      >
                         <motion.div
                           layout
-                          className="team-card-expandable__content"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{
-                            duration: 0.25,
-                            ease: [0.4, 0, 0.2, 1],
-                          }}
+                          className="team-card-carousel__header"
                         >
-                          <motion.p
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ delay: 0.05, duration: 0.2 }}
-                            className="team-card-expandable__description"
-                          >
-                            {team.description}
-                          </motion.p>
+                          <div className="team-card__logo">
+                            {team.logo ? (
+                              <img
+                                src={
+                                  team.logo.replace?.(/^\/public/, "") ??
+                                  team.logo
+                                }
+                                alt={`${team.name} logo`}
+                              />
+                            ) : (
+                              <span>{team.name.slice(0, 2)}</span>
+                            )}
+                          </div>
+                          <div className="team-card-carousel__title-group">
+                            <h3 className="team-card__title">{team.name}</h3>
+                            {team.tagline && (
+                              <p className="team-card__tagline">
+                                {team.tagline}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
 
-                          {team.skills?.length > 0 && (
+                        <AnimatePresence mode="wait">
+                          {isExpanded && (
                             <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ delay: 0.1, duration: 0.2 }}
-                              className="team-card-expandable__skills"
+                              layout
+                              className="team-card-carousel__content"
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{
+                                duration: 0.25,
+                                ease: [0.4, 0, 0.2, 1],
+                              }}
                             >
-                              <div className="chip-group">
-                                {team.skills.map((skill) => (
-                                  <span key={skill} className="chip">
-                                    {skill}
-                                  </span>
-                                ))}
-                              </div>
+                              <motion.p
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ delay: 0.05, duration: 0.2 }}
+                                className="team-card-carousel__description"
+                              >
+                                {team.description}
+                              </motion.p>
+
+                              {team.skills?.length > 0 && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ delay: 0.1, duration: 0.2 }}
+                                  className="team-card-carousel__skills"
+                                >
+                                  <div className="chip-group">
+                                    {team.skills.map((skill) => (
+                                      <span key={skill} className="chip">
+                                        {skill}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+
+                              <motion.a
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ delay: 0.15, duration: 0.2 }}
+                                className="primary-button team-card-carousel__apply-btn"
+                                href="mailto:skylab@ytu.edu.tr?subject=SkyLab%20Ekibi%20Başvuru"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Bu Ekibe Başvur
+                              </motion.a>
                             </motion.div>
                           )}
+                        </AnimatePresence>
+                      </motion.article>
+                    );
+                  },
+                )}
+              </div>
 
-                          <motion.a
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ delay: 0.15, duration: 0.2 }}
-                            className="primary-button team-card-expandable__apply-btn"
-                            href="mailto:skylab@ytu.edu.tr?subject=SkyLab%20Ekibi%20Başvuru"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Bu Ekibe Başvur
-                          </motion.a>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.article>
-                );
-              })}
+              <button
+                className="team-carousel__nav team-carousel__nav--next"
+                onClick={goNext}
+                aria-label="Sonraki ekip"
+              >
+                ›
+              </button>
             </div>
           </section>
 
