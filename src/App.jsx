@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 import Background from "./components/Background";
 import ActiveForms from "./components/ActiveForms";
@@ -111,10 +112,11 @@ const teams = [
 ];
 
 function App() {
-  const [activeTeam, setActiveTeam] = useState(null);
+  const [expandedTeam, setExpandedTeam] = useState(null);
+  const [activeTeamIndex, setActiveTeamIndex] = useState(0);
   const teamsSectionRef = useRef(null);
   const teamsHeaderRef = useRef(null);
-  const [activeTeamIndex, setActiveTeamIndex] = useState(0);
+  const hoverTimeoutRef = useRef(null);
   const carouselPointerRef = useRef({ startX: null });
 
   const handleScrollToTeams = () => {
@@ -123,8 +125,6 @@ function App() {
       block: "start",
     });
   };
-
-  const closeModal = () => setActiveTeam(null);
 
   const clampIndex = useMemo(() => {
     return (value) => {
@@ -143,8 +143,41 @@ function App() {
     [activeTeamIndex, clampIndex],
   );
 
-  const goPrev = () => setActiveTeamIndex((idx) => clampIndex(idx - 1));
-  const goNext = () => setActiveTeamIndex((idx) => clampIndex(idx + 1));
+  const goPrev = () => {
+    setActiveTeamIndex((idx) => clampIndex(idx - 1));
+    setExpandedTeam(null); // Close expanded when navigating
+  };
+
+  const goNext = () => {
+    setActiveTeamIndex((idx) => clampIndex(idx + 1));
+    setExpandedTeam(null); // Close expanded when navigating
+  };
+
+  const toggleTeam = (teamId) => {
+    setExpandedTeam(expandedTeam === teamId ? null : teamId);
+  };
+
+  const handleMouseEnter = (teamId) => {
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    // Set timeout to expand after 800ms hover
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (expandedTeam !== teamId) {
+        setExpandedTeam(teamId);
+      }
+    }, 800);
+  };
+
+  const handleMouseLeave = () => {
+    // Clear timeout if user leaves before 800ms
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
 
   const onCarouselKeyDown = (event) => {
     if (event.key === "ArrowLeft") {
@@ -265,171 +298,116 @@ function App() {
               <p className="eyebrow">Ekipler</p>
               <h2>SkyLab Ar-Ge ekipleri ile tanış</h2>
               <p>
-                Kartlara tıklayarak her ekibin proje yaklaşımını, açıklamasını
-                ve katılımcıların kullandığı temel yetenekleri inceleyebilirsin.
+                Kartlara tıklayarak veya üzerinde bekleyerek her ekibin proje
+                yaklaşımını, açıklamasını ve katılımcıların kullandığı temel
+                yetenekleri inceleyebilirsin.
               </p>
             </header>
-            <div
-              className="team-carousel"
-              role="group"
-              aria-label="Ekip carousel"
-              tabIndex={0}
-              onKeyDown={onCarouselKeyDown}
-              onPointerDown={onCarouselPointerDown}
-              onPointerUp={onCarouselPointerUp}
-            >
-              <button
-                className="team-carousel__button"
-                type="button"
-                onClick={goPrev}
-                aria-label="Önceki ekip"
-              >
-                ‹
-              </button>
+            <div className="team-grid-expandable">
+              {teams.map((team) => {
+                const isExpanded = expandedTeam === team.id;
 
-              <div className="team-carousel__viewport">
-                {teams[prevIndex] ? (
-                  <article
-                    key={teams[prevIndex].id}
-                    className="team-card team-card--carousel team-card--carousel-side"
-                    style={{ "--team-accent": teams[prevIndex].accent }}
-                    onClick={() => setActiveTeamIndex(prevIndex)}
-                    tabIndex={-1}
-                    aria-label={`Önizleme: ${teams[prevIndex].name}`}
-                  >
-                    <div className="team-card__content">
-                      <div
-                        className="team-card__logo"
-                        aria-hidden={!teams[prevIndex].logo}
-                      >
-                        {teams[prevIndex].logo ? (
-                          <img
-                            src={
-                              teams[prevIndex].logo.replace?.(
-                                /^\/public/,
-                                "",
-                              ) ?? teams[prevIndex].logo
-                            }
-                            alt={`${teams[prevIndex].name} logo`}
-                          />
-                        ) : (
-                          <span aria-hidden="true">
-                            {teams[prevIndex].name.slice(0, 2)}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="team-card__title">
-                        {teams[prevIndex].name}
-                      </h3>
-                      {teams[prevIndex].tagline ? (
-                        <p className="team-card__tagline">
-                          {teams[prevIndex].tagline}
-                        </p>
-                      ) : null}
-                    </div>
-                  </article>
-                ) : null}
-
-                {teams[activeTeamIndex] ? (
-                  <article
-                    key={teams[activeTeamIndex].id}
-                    className="team-card team-card--carousel team-card--carousel-main"
-                    style={{ "--team-accent": teams[activeTeamIndex].accent }}
-                    onClick={() => setActiveTeam(teams[activeTeamIndex])}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Seçili ekip: ${teams[activeTeamIndex].name}`}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setActiveTeam(teams[activeTeamIndex]);
-                      }
+                return (
+                  <motion.article
+                    key={team.id}
+                    layout
+                    className={`team-card-expandable ${isExpanded ? "team-card-expandable--expanded" : ""}`}
+                    style={{ "--team-accent": team.accent }}
+                    onClick={() => toggleTeam(team.id)}
+                    onMouseEnter={() => handleMouseEnter(team.id)}
+                    onMouseLeave={handleMouseLeave}
+                    initial={false}
+                    animate={{
+                      scale: isExpanded ? 1 : 1,
+                    }}
+                    transition={{
+                      layout: {
+                        duration: 0.3,
+                        type: "spring",
+                        stiffness: 350,
+                        damping: 35,
+                      },
                     }}
                   >
-                    <div className="team-card__content">
-                      <div
-                        className="team-card__logo"
-                        aria-hidden={!teams[activeTeamIndex].logo}
-                      >
-                        {teams[activeTeamIndex].logo ? (
+                    <motion.div layout className="team-card-expandable__header">
+                      <div className="team-card__logo">
+                        {team.logo ? (
                           <img
                             src={
-                              teams[activeTeamIndex].logo.replace?.(
-                                /^\/public/,
-                                "",
-                              ) ?? teams[activeTeamIndex].logo
+                              team.logo.replace?.(/^\/public/, "") ?? team.logo
                             }
-                            alt={`${teams[activeTeamIndex].name} logo`}
+                            alt={`${team.name} logo`}
                           />
                         ) : (
-                          <span aria-hidden="true">
-                            {teams[activeTeamIndex].name.slice(0, 2)}
-                          </span>
+                          <span>{team.name.slice(0, 2)}</span>
                         )}
                       </div>
-                      <h3 className="team-card__title">
-                        {teams[activeTeamIndex].name}
-                      </h3>
-                      {teams[activeTeamIndex].tagline ? (
-                        <p className="team-card__tagline">
-                          {teams[activeTeamIndex].tagline}
-                        </p>
-                      ) : null}
-                    </div>
-                  </article>
-                ) : null}
-
-                {teams[nextIndex] ? (
-                  <article
-                    key={teams[nextIndex].id}
-                    className="team-card team-card--carousel team-card--carousel-side"
-                    style={{ "--team-accent": teams[nextIndex].accent }}
-                    onClick={() => setActiveTeamIndex(nextIndex)}
-                    tabIndex={-1}
-                    aria-label={`Önizleme: ${teams[nextIndex].name}`}
-                  >
-                    <div className="team-card__content">
-                      <div
-                        className="team-card__logo"
-                        aria-hidden={!teams[nextIndex].logo}
-                      >
-                        {teams[nextIndex].logo ? (
-                          <img
-                            src={
-                              teams[nextIndex].logo.replace?.(
-                                /^\/public/,
-                                "",
-                              ) ?? teams[nextIndex].logo
-                            }
-                            alt={`${teams[nextIndex].name} logo`}
-                          />
-                        ) : (
-                          <span aria-hidden="true">
-                            {teams[nextIndex].name.slice(0, 2)}
-                          </span>
+                      <div className="team-card-expandable__title-group">
+                        <h3 className="team-card__title">{team.name}</h3>
+                        {team.tagline && (
+                          <p className="team-card__tagline">{team.tagline}</p>
                         )}
                       </div>
-                      <h3 className="team-card__title">
-                        {teams[nextIndex].name}
-                      </h3>
-                      {teams[nextIndex].tagline ? (
-                        <p className="team-card__tagline">
-                          {teams[nextIndex].tagline}
-                        </p>
-                      ) : null}
-                    </div>
-                  </article>
-                ) : null}
-              </div>
+                    </motion.div>
 
-              <button
-                className="team-carousel__button"
-                type="button"
-                onClick={goNext}
-                aria-label="Sonraki ekip"
-              >
-                ›
-              </button>
+                    <AnimatePresence mode="wait">
+                      {isExpanded && (
+                        <motion.div
+                          layout
+                          className="team-card-expandable__content"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{
+                            duration: 0.25,
+                            ease: [0.4, 0, 0.2, 1],
+                          }}
+                        >
+                          <motion.p
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ delay: 0.05, duration: 0.2 }}
+                            className="team-card-expandable__description"
+                          >
+                            {team.description}
+                          </motion.p>
+
+                          {team.skills?.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ delay: 0.1, duration: 0.2 }}
+                              className="team-card-expandable__skills"
+                            >
+                              <div className="chip-group">
+                                {team.skills.map((skill) => (
+                                  <span key={skill} className="chip">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+
+                          <motion.a
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ delay: 0.15, duration: 0.2 }}
+                            className="primary-button team-card-expandable__apply-btn"
+                            href="mailto:skylab@ytu.edu.tr?subject=SkyLab%20Ekibi%20Başvuru"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Bu Ekibe Başvur
+                          </motion.a>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.article>
+                );
+              })}
             </div>
           </section>
 
@@ -468,79 +446,6 @@ function App() {
             <p>Tüm hakları saklıdır © {new Date().getFullYear()}.</p>
           </div>
         </footer>
-
-        {activeTeam && (
-          <div
-            className="team-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`${activeTeam.id}-title`}
-            onClick={closeModal}
-          >
-            <div
-              className="team-modal__content"
-              role="document"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="team-modal__close-wrapper">
-                <button
-                  className="modal-close"
-                  type="button"
-                  onClick={closeModal}
-                  aria-label="Bilgi penceresini kapat"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="team-modal__left">
-                <div
-                  className="team-modal__media"
-                  style={{
-                    background:
-                      !activeTeam.logo && activeTeam.visual
-                        ? activeTeam.visual
-                        : undefined,
-                  }}
-                >
-                  {activeTeam.logo ? (
-                    <img
-                      src={
-                        activeTeam.logo.replace?.(/^\/public/, "") ??
-                        activeTeam.logo
-                      }
-                      alt={activeTeam.name}
-                    />
-                  ) : (
-                    <div className="team-modal__media-overlay">
-                      <span>{activeTeam.name}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="team-modal__meta">
-                  {activeTeam.skills?.length ? (
-                    <div className="chip-group">
-                      {activeTeam.skills.map((skill) => (
-                        <span key={skill} className="chip">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  <a
-                    className="primary-button"
-                    href="mailto:skylab@ytu.edu.tr?subject=SkyLab%20Ekibi%20Başvuru"
-                  >
-                    Bu Ekibe Başvur
-                  </a>
-                </div>
-              </div>
-              <div className="team-modal__info">
-                <h3 id={`${activeTeam.id}-title`}>{activeTeam.name}</h3>
-                <p>{activeTeam.description}</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );
